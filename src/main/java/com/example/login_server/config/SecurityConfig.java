@@ -68,7 +68,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:63342")); // 프론트엔드 서버 도메인 추가
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // 허용할 HTTP 메서드
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // 허용할 헤더
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "dataType", "async")); // 허용할 헤더
         configuration.setAllowCredentials(true); // 인증 정보 포함 여부 (필요시 설정)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

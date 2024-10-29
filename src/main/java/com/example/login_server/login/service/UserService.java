@@ -43,10 +43,7 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public void updateTempPassword(String to, String authNum) {
-        User user = new User();
-        user.setUsername(to);
-        user.setPassword(passwordEncoder.encode(authNum));
-        userRepository.updateUserByPasswordForUsername(user);
+    public void updatePassword(String to, String authNum) throws Exception {
+        userRepository.updateUserByPassword(to , passwordEncoder.encode(authNum));
     }
 }
