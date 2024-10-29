@@ -100,7 +100,10 @@ public class LoginController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         if (userService.existsByUsername(user.getUsername())) {
-            return ResponseEntity.badRequest().body("이미 사용중인 이메일입니다.");
+            return ResponseEntity.badRequest().body("이미 사용중인 이메일 입니다.");
+        }
+        if (userService.existsByNickname(user.getNickname())) {
+            return ResponseEntity.badRequest().body("이미 사용중인 닉네임 입니다.");
         }
         userService.saveUser(user);
         return ResponseEntity.ok("회원가입 되었습니다.");

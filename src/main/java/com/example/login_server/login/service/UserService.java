@@ -42,6 +42,10 @@ public class UserService implements UserDetailsService {
         return userRepository.existsByUsername(username);
     }
 
+    public boolean existsByNickname(String username) {
+        return userRepository.existsByNickname(username);
+    }
+
 
     public void updatePassword(String to, String authNum) throws Exception {
         userRepository.updateUserByPassword(to , passwordEncoder.encode(authNum));

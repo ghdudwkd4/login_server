@@ -40,7 +40,7 @@ public class EmailService {
             return authNum;
 
         } catch (MessagingException e) {
-            System.out.println("fail");
+            System.err.println(e.getMessage());
             throw new RuntimeException(e);
         }
     }
