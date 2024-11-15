@@ -1,5 +1,6 @@
 package com.example.login_server.login.controller;
 
+import com.example.login_server.login.dto.CustomUserDetails;
 import com.example.login_server.login.entity.User;
 import com.example.login_server.login.service.UserService;
 import com.example.login_server.util.JWTUtil;
@@ -11,10 +12,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,9 +42,13 @@ public class LoginController {
                 .map(Cookie::getValue)
                 .orElse(null);
 
-        if (refreshToken != null && JWTUtil.validateToken(refreshToken , JWTUtil.extractUsername(refreshToken))) {
-            String username = JWTUtil.extractUsername(refreshToken);
-            String newAccessToken = JWTUtil.generateToken(username);
+        if (refreshToken != null && JWTUtil.validateToken(refreshToken , "refresh")) {
+            Map<String , Object> user = JWTUtil.extractUserData(refreshToken, "refresh");
+
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("nickname" , user.get("nickname").toString());
+            claims.put("userId" , user.get("userId").toString());
+            String newAccessToken = JWTUtil.generateToken(JWTUtil.extractUsername(refreshToken, "refresh"), claims);
 
             // HTTP 전용 쿠키에 JWT 설정
             Cookie newAccessTokenCookie = new Cookie("access_token", newAccessToken);
@@ -48,7 +58,7 @@ public class LoginController {
 //            newAccessTokenCookie.setSecure(true); https 설정
             response.addCookie(newAccessTokenCookie);
 
-            return ResponseEntity.ok("Token refreshed");
+            return ResponseEntity.ok(user.get("userId").toString());
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
@@ -57,13 +67,21 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody User user , HttpServletResponse response) {
         try {
-            authenticationManager.authenticate(
+            Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
             );
 
-            String token = JWTUtil.generateToken(user.getUsername());
-            String refreshToken = JWTUtil.generateRefreshToken(user.getUsername());
+            // SecurityContextHolder 에 Authentication 셋팅
+            SecurityContextHolder.getContext().setAuthentication(auth);
 
+            // token 생성 시 추후 nickname 도 같이 얻기 위해 Authentication 에서 조회 후 세팅
+            CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+            Map<String , Object> claims = new HashMap<>();
+            claims.put("nickname", userDetails.getNickname());
+            claims.put("userId", userDetails.getUserId());
+
+            String token = JWTUtil.generateToken(user.getUsername() , claims);
+            String refreshToken = JWTUtil.generateRefreshToken(user.getUsername() , claims);
 
             // HTTP 전용 쿠키에 JWT 설정
             Cookie cookie = new Cookie("access_token", token);
@@ -81,7 +99,7 @@ public class LoginController {
 //            refreshTokenCookie.setSecure(true); https 설정
             response.addCookie(refreshTokenCookie);
 
-            return ResponseEntity.ok("");  // JWT 반환
+            return ResponseEntity.ok(userDetails.getUserId());  // User ID 반환
         } catch (AuthenticationException e) {
             e.printStackTrace();
             return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
@@ -107,5 +125,21 @@ public class LoginController {
         }
         userService.saveUser(user);
         return ResponseEntity.ok("회원가입 되었습니다.");
+    }
+
+    @PostMapping("/password")
+    public ResponseEntity<?> updatePassword(@RequestBody User user) throws Exception {
+        try {
+            userService.updatePassword(user);
+            return ResponseEntity.ok("비밀번호가 정상적으로 변경 되었습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/user")
+    public ResponseEntity<?> findNotInUserId(HttpServletRequest request , HttpServletResponse response) throws Exception {
+        return ResponseEntity.ok(userService.findNotInUserId());
     }
 }

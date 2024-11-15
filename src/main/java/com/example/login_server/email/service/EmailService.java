@@ -19,14 +19,10 @@ public class EmailService {
     private final JavaMailSender javaMailSender;
     private final SpringTemplateEngine templateEngine;
 
-    private final UserService userService;
-
     public String sendMail(EmailMessage emailMessage, String type) throws Exception {
         String authNum = createCode();
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-
-        if (type.equals("password")) userService.updatePassword(emailMessage.getTo(), authNum);
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");

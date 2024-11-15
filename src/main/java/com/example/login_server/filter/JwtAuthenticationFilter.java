@@ -27,11 +27,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .findFirst()
                     .map(Cookie::getValue)
                     .orElse(null);
-            if (jwt != null && JWTUtil.validateToken(jwt, JWTUtil.extractUsername(jwt))) {
-                String username = JWTUtil.extractUsername(jwt);
+            if (jwt != null && JWTUtil.validateToken(jwt, "access")) {
+                UsernamePasswordAuthenticationToken authentication = JWTUtil.getAuthentication(jwt , "access");
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                /*
+                String username = JWTUtil.extractUsername(jwt,"access");
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
-
+                */
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

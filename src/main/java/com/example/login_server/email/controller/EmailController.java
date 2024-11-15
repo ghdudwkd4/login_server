@@ -18,7 +18,7 @@ public class EmailController {
 
     private final EmailService emailService;
 
-    // 회원가입 이메일 인증 - 요청 시 body로 인증번호 반환하도록 작성하였음
+    // 이메일 인증 - 요청 시 body로 인증번호 반환하도록 작성하였음
     @PostMapping("/email")
     public ResponseEntity sendJoinMail(@RequestBody EmailPostDto emailPostDto) throws Exception {
         EmailMessage emailMessage = EmailMessage.builder()
@@ -32,18 +32,5 @@ public class EmailController {
         emailResponseDto.setCode(code);
 
         return ResponseEntity.ok(emailResponseDto);
-    }
-
-    // 임시 비밀번호 발급
-    @PostMapping("/password")
-    public ResponseEntity sendPasswordMail(@RequestBody EmailPostDto emailPostDto) throws Exception {
-        EmailMessage emailMessage = EmailMessage.builder()
-                .to(emailPostDto.getEmail())
-                .subject("[DR-STUDY] 임시 비밀번호 발급")
-                .build();
-
-        emailService.sendMail(emailMessage, "password");
-
-        return ResponseEntity.ok().build();
     }
 }

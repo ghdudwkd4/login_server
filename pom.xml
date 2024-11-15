@@ -81,6 +81,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- web socket -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
 		<!-- JWT (JSON Web Token) -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

@@ -10,11 +10,11 @@ import lombok.Setter;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private long userId;
     private String username;
-    private String nickname;
     private String password;
-
+    private String nickname;
+    private String job;
 }
 
 
